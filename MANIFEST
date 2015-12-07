@@ -1,5 +1,5 @@
 bin/perfsonar_collector.pl
-CHANGES
+CHANGES.md
 conf/config.xml.example
 conf/logging.conf.example
 grnoc-perfsonar-collector.spec
