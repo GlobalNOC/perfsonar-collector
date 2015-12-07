@@ -1,55 +1,55 @@
 <config>
-  <!-- batch_size indicates how many datapoints to push to TSDS in each request -->
-  <batch_size>100</batch_size>
+  <!-- batch-size indicates how many datapoints to push to TSDS in each request -->
+  <batch-size>100</batch-size>
 
-  <!-- time_range, in seconds indicates how far back the collector will go from the current time -->
+  <!-- time-range, in seconds indicates how far back the collector will go from the current time -->
   <!-- for example 3600 means each time the collector runs, it will collect data from the last hour -->
-  <time_range>3600</time_range> 
+  <time-range>3600</time-range> 
 
-  <!-- run_interval indicates how frequently the collector runs (in seconds) -->
-  <run_interval>600</run_interval>
+  <!-- run-interval indicates how frequently the collector runs (in seconds) -->
+  <run-interval>600</run-interval>
 
-  <!-- default_tsds_interval is the default interval to send to TSDS. 
+  <!-- default-tsds-interval is the default interval to send to TSDS. 
        Most tests have an interval associated with them; this is the fallback value for when no
        interval is available. This is sometimes the case with continuous tests.
        Default setting of 60 is recommended.
        -->
-  <default_tsds_interval>60</default_tsds_interval>
+  <default-tsds-interval>60</default-tsds-interval>
 
   <esmond>
     <!-- enter as many location tags as you wish, one for each perfSONAR measurement archive (MA) you wish to query -->
     <location>http://hostname/esmond/perfsonar/archive/</location>
 
-    <!-- The event_type configuration below should work if you're using fairly default settings. Only change this if you know what you're doing -->
-	<event_type name="throughput" tsds_measurement_type="bwctl_throughput">
-		<data type="base" summary_name="throughput">
-			<value type="int" tsds_name="throughput" />
+    <!-- The event-type configuration below should work if you're using fairly default settings. Only change this if you know what you're doing -->
+	<event-type name="throughput" tsds-measurement-type="bwctl_throughput">
+		<data type="base" summary-name="throughput">
+			<value type="int" tsds-name="throughput" />
 		</data>
-		<data type="base" summary_name="packet-loss-rate">
-			<value type="float" tsds_name="packet_loss_rate" />
+		<data type="base" summary-name="packet-loss-rate">
+		      <value type="float" tsds-name="packet_loss_rate" />
 		</data>
-		<data type="base" summary_name="packet-retransmits">
-			<value type="int" tsds_name="packet_retransmits" />
+		<data type="base" summary-name="packet-retransmits">
+			<value type="int" tsds-name="packet_retransmits" />
 		</data>
-	</event_type>
-	<event_type name="histogram-owdelay" tsds_measurement_type="owamp_data">
-		<data type="statistics" window="300" summary_name="histogram-owdelay">
-			<value type="float" tsds_name="min_latency" esmond_name="minimum" />
-			<value type="float" tsds_name="mean_latency" esmond_name="mean" />
-			<value type="float" tsds_name="max_latency" esmond_name="maximum"/>
+	</event-type>
+	<event-type name="histogram-owdelay" tsds-measurement-type="owamp_data">
+		<data type="statistics" window="300" summary-name="histogram-owdelay">
+			<value type="float" tsds-name="min_latency" esmond-name="minimum" />
+			<value type="float" tsds-name="mean_latency" esmond-name="mean" />
+			<value type="float" tsds-name="max_latency" esmond-name="maximum"/>
 		</data>
-		<data type="aggregation" window="300" summary_name="packet-loss-rate">
-			<value type="float" tsds_name="packet_loss_rate" esmond_name="packet-loss-rate" />
+		<data type="aggregation" window="300" summary-name="packet-loss-rate">
+			<value type="float" tsds-name="packet_loss_rate" esmond-name="packet-loss-rate" />
 		</data>
-	</event_type>
-	<event_type name="histogram-rtt" tsds_measurement_type="owamp_data">
-		<data type="statistics" window="3600" summary_name="histogram-rtt">
-			<value type="float" tsds_name="mean_rtt" esmond_name="mean" />
+	</event-type>
+	<event-type name="histogram-rtt" tsds-measurement-type="owamp_data">
+		<data type="statistics" window="3600" summary-name="histogram-rtt">
+			<value type="float" tsds-name="mean_rtt" esmond-name="mean" />
 		</data>
-		<data type="aggregation" window="3600" summary_name="packet-loss-rate-bidir">
-			<value type="float" tsds_name="packet_loss_rate_bidir" esmond_name="packet-loss-rate-bidir" />
+		<data type="aggregation" window="3600" summary-name="packet-loss-rate-bidir">
+			<value type="float" tsds-name="packet_loss_rate_bidir" esmond-name="packet-loss-rate-bidir" />
 		</data>
-	</event_type>
+	</event-type>
   </esmond>
 
   <timeseries user="username" pass="password">

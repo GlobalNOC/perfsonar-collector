@@ -229,19 +229,19 @@ sub _parse_config {
     $self->_set_pass( $pass );
 
     my $default_tsds_interval = 60;
-    $default_tsds_interval = $config->get('/config/default_tsds_interval')->[0] if defined $config->get('/config/default_tsds_interval');
+    $default_tsds_interval = $config->get('/config/default-tsds-interval')->[0] if defined $config->get('/config/default-tsds-interval');
     $self->_set_default_tsds_interval( $default_tsds_interval );
 
-    $self->_set_batch_size( $config->get('/config/batch_size')->[0] ) if defined $config->get('/config/batch_size');
+    $self->_set_batch_size( $config->get('/config/batch-size')->[0] ) if defined $config->get('/config/batch-size');
 
     $self->_update_time_range();
 
-    my $run_interval = $config->get('/config/run_interval')->[0];
+    my $run_interval = $config->get('/config/run-interval')->[0];
     $self->_set_interval( $run_interval );
 
     my $esmond = $config->get('/config/esmond')->[0];
     $self->_set_esmond_urls( $esmond->{'location'} );
-    $self->_set_event_types_conf( $config->get('/config/esmond/event_type') );
+    $self->_set_event_types_conf( $config->get('/config/esmond/event-type') );
 }
 
 sub send_esmond_data {
@@ -353,11 +353,11 @@ sub get_esmond_values {
     my %urls = ();
 
     my $event_type = $event_type_obj->{'name'};
-    my $measurement_type = $event_type_obj->{'tsds_measurement_type'};
+    my $measurement_type = $event_type_obj->{'tsds-measurement-type'};
 
     my @sub_event_types = ();
     foreach my $data (@{ $event_type_obj->{'data'} }) {
-        push @sub_event_types, $data->{'summary_name'};
+        push @sub_event_types, $data->{'summary-name'};
     }
     my $time_range = $self->time_range;
     my $time_start = $self->time_start;
@@ -390,7 +390,7 @@ sub get_esmond_values {
             next if not grep { /$row_et_name/ } @sub_event_types;
             foreach my $config_value ( @{ $event_type_obj->{'data'} } ) {
                 my $type = $config_value->{'type'};
-                my $summary_name = $config_value->{'summary_name'};
+                my $summary_name = $config_value->{'summary-name'};
                 my $window = $config_value->{'window'} || $default_interval;
                 if ($summary_name ne $row_et_name) {
                     next;
@@ -438,8 +438,8 @@ sub get_values_from_url {
         my $ts = $result->{'ts'};
         my $val;        
         foreach my $config_value ( @{ $config_values->{'value'}} ) {
-            my $esmond_name = $config_value->{'esmond_name'};
-            my $tsds_name = $config_value->{'tsds_name'};
+            my $esmond_name = $config_value->{'esmond-name'};
+            my $tsds_name = $config_value->{'tsds-name'};
             if ($config_values->{'type'} eq 'base' || $config_values->{'type'} eq 'aggregation') {
                 $val = $result->{'val'};
             } else {
@@ -499,7 +499,7 @@ sub get_values_url {
         my $found = 0;
         foreach my $summary (@{ $esmond_type->{'summaries'} } ) {
             next if !defined ($summary->{'summary-type'}) || !defined($summary->{'summary-window'});
-            next if $esmond_type->{'event-type'} ne $config_value->{'summary_name'};
+            next if $esmond_type->{'event-type'} ne $config_value->{'summary-name'};
             if ($summary->{'summary-type'} eq $config_value->{'type'} && $summary->{'summary-window'} == $config_value->{'window'}) {
                 $values_url .= $summary->{'uri'};
                 $found++;
@@ -548,7 +548,7 @@ sub _update_time_range {
             $time_start = $now - $time_range;
         }
     } else {
-        $time_range = $config->get('/config/time_range')->[0] if defined $config->get('/config/time_range')->[0];
+        $time_range = $config->get('/config/time-range')->[0] if defined $config->get('/config/time-range')->[0];
         $time_end = $now;
         $time_start = $now - $time_range;
     }
