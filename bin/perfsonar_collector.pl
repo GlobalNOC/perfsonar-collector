@@ -3,12 +3,12 @@
 use strict;
 use warnings;
 
-use GRNOC::perfSONAR::TSDS::Collector;
+use GRNOC::perfSONAR::Collector;
 use Getopt::Long;
 use Data::Dumper;
 
 ### constants ### 
-use constant DEFAULT_CONFIG_FILE => "/etc/grnoc/perfsonar_tsds_collector/config.xml";
+use constant DEFAULT_CONFIG_FILE => "/etc/grnoc/perfsonar-collector/config.xml";
 
 # command line options
 my $config_file = DEFAULT_CONFIG_FILE;
@@ -21,19 +21,18 @@ GetOptions( "config|c=s" => \$config_file,
             "nofork" => \$nofork,
             "help|h|?" => \$help,
             "timerange=s" => \$time_range,
-            "runonce" => \$runonce );
+            "runonce" => \$runonce ) or usage();
 
 # did they ask for help?
 usage() if ( $help );
 
 my $daemonize = !$nofork;
-#warn "daemonize: $daemonize, config_file: $config_file; time_range; $time_range";
 
-my $collector = GRNOC::perfSONAR::TSDS::Collector->new( config_file => $config_file,
-                                                        daemonize => $daemonize,
-                                                        time_range_cli => $time_range,
-                                                        run_once => $runonce,
-                                                      );
+my $collector = GRNOC::perfSONAR::Collector->new( config_file => $config_file,
+						  daemonize => $daemonize,
+						  time_range_cli => $time_range,
+						  run_once => $runonce,
+    );
 
 $collector->start();
 

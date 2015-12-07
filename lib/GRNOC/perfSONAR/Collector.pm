@@ -1,21 +1,18 @@
-package GRNOC::perfSONAR::TSDS::Collector;
+package GRNOC::perfSONAR::Collector;
 
 use Moo;
 use strictures;
 
-use GRNOC::DatabaseQuery;
 use GRNOC::WebService::Client;
 use GRNOC::Log;
 
-use LWP::Simple qw(get);
-use JSON qw(from_json);
-use Fcntl qw( :flock );
-use Data::Dumper;
-use JSON;
+use LWP::Simple qw( get );
+use JSON qw( encode_json decode_json );
 use Storable 'dclone';
 use Proc::Daemon;
 use Math::Round qw( nhimult );
-use POSIX qw(strftime);
+use Data::Dumper;
+use Try::Tiny;
 
 ### constants ### 
 use constant SLEEP_OFFSET => 30;
@@ -73,8 +70,6 @@ has tsds_location => ( is => 'rwp' );
 has pid_file => ( is => 'rwp' );
 
 has log_file => ( is => 'rwp' );
-
-has fh => ( is => 'rwp' );
 
 has esmond_urls => ( is => 'rwp' );
 
@@ -192,12 +187,20 @@ sub _loop {
         }
 
         # collect all data from all hosts for this time interval prior to sleeping again
-        $self->logger->info("starting run -- getting lock ...");
-        $self->get_lock();
+        $self->logger->info("starting run ...");
         $self->logger->info("getting data ...");
-        $self->get_esmond_data();
-        $self->logger->info("run complete. releasing lock ...");
-        $self->release_lock();
+
+	try {
+
+	    $self->get_esmond_data();
+	}
+
+	catch {
+
+	    $self->logger->error( $_ );
+	};
+	
+        $self->logger->info("run complete.");
 
         $first_run = 0;
         $self->_set_first_run( $first_run );
@@ -205,8 +208,8 @@ sub _loop {
     }
 }
 
-
 sub _parse_config {
+
     my ( $self ) = @_;
 
     my $config = GRNOC::Config->new( config_file => $self->{'config_file'} ); 
@@ -245,37 +248,19 @@ sub _parse_config {
     $self->_set_event_types_conf( $config->get('/config/esmond/event_type') );
 }
 
-sub get_lock {
-    my ( $self ) = @_;
-    my $fh = $self->{'fh'};
-    my $pid_file = $self->{'pid_file'};
-
-    open($fh, ">", $pid_file) or die($!);
-    my $is_locked = flock($fh, LOCK_EX | LOCK_NB) or die("Unable to lock $pid_file: " . $!);
-
-    print $fh "$$\n";
-    $self->_set_fh( $fh );
-}
-
-sub release_lock {
-    my ( $self ) = @_;
-    my $fh = $self->{'fh'};
-    my $pid_file = $self->{'pid_file'};
-
-    flock($fh, LOCK_UN) or die($!);
-
-    close($fh) or die($!);
-
-    unlink($pid_file) or die($!);
-}
-
 sub send_esmond_data {
     my ( $self ) = @_;
     my $measurement_data = $self->measurement_data;
 
     my $websvc = GRNOC::WebService::Client->new(
         cookieJar => "/tmp/perfsonar_data_pusher_cookies.txt",
-        usePost => 1
+        usePost => 1,
+	error_callback => sub {
+	    
+	    my ( $websvc ) = @_;
+
+	    die( "Error sending data to TSDS: " . $websvc->get_error );
+	}
         );
 
     $websvc->set_credentials( uid => $self->user, passwd => $self->pass );
@@ -284,7 +269,7 @@ sub send_esmond_data {
     if(@$measurement_data) {
         #$self->logger->info('sending data ... ' . @$measurement_data);
         #warn "measurement_data " . Dumper $measurement_data;
-        my $json = to_json($measurement_data);
+        my $json = encode_json($measurement_data);
 
         foreach my $location( @{ $self->tsds_location } ){
             $websvc->set_url($location);
@@ -391,8 +376,10 @@ sub get_esmond_values {
         $url .= join('&', @params);
     }
     #$self->logger->info('url with params ' . $url);
-    my $res;
-    $res = from_json(get($url));
+    my $content = get( $url );
+
+    die "Error retrieving data from esmond" if ( !defined $content );
+    my $res = decode_json(get($url));
     foreach my $row (@$res) {
         foreach my $row_et (@{ $row->{'event-types'} }) {
             my $row_et_name = $row_et->{'event-type'};
@@ -439,7 +426,7 @@ sub get_values_from_url {
     my $config_values = shift;
     my $metadata = shift;
     #$self->logger->info('values_url: ' . $url);
-    my $results = from_json(get($url));
+    my $results = decode_json(get($url));
     my $values = [];
     my $measurement_data = $self->measurement_data;
 

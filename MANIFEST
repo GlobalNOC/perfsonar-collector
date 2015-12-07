@@ -2,10 +2,9 @@ bin/perfsonar_collector.pl
 CHANGES
 conf/config.xml.example
 conf/logging.conf.example
-grnoc-perfsonar-tsds-pusher.spec
+grnoc-perfsonar-collector.spec
 init.d/perfsonar_collector
 lib/GRNOC/perfSONAR/Collector.pm
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
-META.json			Module JSON meta-data (added by MakeMaker)
-META.yml			Module YAML meta-data (added by MakeMaker)
