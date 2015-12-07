@@ -1,7 +1,7 @@
 log4perl.rootLogger                = DEBUG, SYSLOG
 log4perl.appender.SYSLOG           = Log::Dispatch::Syslog
 log4perl.appender.SYSLOG.min_level = debug
-log4perl.appender.SYSLOG.ident     = perfsonar_tsds_collector
+log4perl.appender.SYSLOG.ident     = perfsonar_collector
 log4perl.appender.SYSLOG.facility  = LOCAL0
 log4perl.appender.SYSLOG.layout    = PatternLayout
 log4perl.appender.SYSLOG.layout.conversionPattern = %d %H %p %F %L %m%n

@@ -6,7 +6,7 @@ use strictures;
 use GRNOC::WebService::Client;
 use GRNOC::Log;
 
-use LWP::Simple qw( get );
+use LWP::UserAgent;
 use JSON qw( encode_json decode_json );
 use Storable 'dclone';
 use Proc::Daemon;
@@ -21,6 +21,12 @@ use constant SLEEP_OFFSET => 30;
 
 has config_file => ( is => 'ro',
                      required =>  1 );
+
+has logging_file => ( is => 'ro',
+		      required => 1 );
+
+has pid_file => ( is => 'ro',
+		  required => 1 );
 
 ### optional attributes ###
 
@@ -67,10 +73,6 @@ has pass => ( is => 'rwp' );
 
 has tsds_location => ( is => 'rwp' );
 
-has pid_file => ( is => 'rwp' );
-
-has log_file => ( is => 'rwp' );
-
 has esmond_urls => ( is => 'rwp' );
 
 has event_types_conf => ( is => 'rwp' );
@@ -91,7 +93,7 @@ sub BUILD {
     $self->_parse_config();
 
     # create and store logger object
-    my $grnoc_log = GRNOC::Log->new( config => $self->{'log_file'} );
+    my $grnoc_log = GRNOC::Log->new( config => $self->logging_file );
     my $logger = GRNOC::Log->get_logger();
 
     $self->_set_logger( $logger );
@@ -229,12 +231,6 @@ sub _parse_config {
     my $default_tsds_interval = 60;
     $default_tsds_interval = $config->get('/config/default_tsds_interval')->[0] if defined $config->get('/config/default_tsds_interval');
     $self->_set_default_tsds_interval( $default_tsds_interval );
-
-    my $pid_file = $config->get('/config/pid-file')->[0]->{'location'};
-    $self->_set_pid_file( $pid_file );
-
-    my $log_file = $self->config->get( '/config/logging/@config-file')->[0];
-    $self->_set_log_file( $log_file );
 
     $self->_set_batch_size( $config->get('/config/batch_size')->[0] ) if defined $config->get('/config/batch_size');
 
@@ -375,11 +371,18 @@ sub get_esmond_values {
     if ( @params > 0 ) {
         $url .= join('&', @params);
     }
-    #$self->logger->info('url with params ' . $url);
-    my $content = get( $url );
 
-    die "Error retrieving data from esmond" if ( !defined $content );
-    my $res = decode_json(get($url));
+    # retrieve data from esmond webservice
+    my $www = LWP::UserAgent->new();
+    my $response = $www->get( $url );
+
+    if ( !$response->is_success ) {
+
+	die( "Error retrieving data from esmond: " . $response->status_line );
+    }
+
+    my $res = decode_json( $response->decoded_content );
+
     foreach my $row (@$res) {
         foreach my $row_et (@{ $row->{'event-types'} }) {
             my $row_et_name = $row_et->{'event-type'};

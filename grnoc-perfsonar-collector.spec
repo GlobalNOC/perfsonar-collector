@@ -37,6 +37,7 @@ make pure_install
 %{__install} -d -p %{buildroot}/etc/grnoc/perfsonar-collector/
 %{__install} -d -p %{buildroot}/usr/bin/
 %{__install} -d -p %{buildroot}/etc/init.d/
+%{__install} -d -p %{buildroot}/var/lib/grnoc/perfsonar-collector/
 
 %{__install} conf/config.xml.example %{buildroot}/etc/grnoc/perfsonar-collector/config.xml
 %{__install} conf/logging.conf.example %{buildroot}/etc/grnoc/perfsonar-collector/logging.conf
@@ -61,3 +62,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(754, root, root) /usr/bin/perfsonar_collector.pl
 %attr(754, root, root) /etc/init.d/perfsonar_collector
+
+%attr(755, root, root) %dir /var/lib/grnoc/perfsonar-collector

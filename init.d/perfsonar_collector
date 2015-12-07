@@ -1,116 +1,91 @@
-#!/usr/bin/perl
+#!/bin/sh
+#
+# perfsonar_collector        init file for starting up the perfsonar collector daemon
+#
+# chkconfig:   2345 20 80
+# description: Starts and stops the perfsonar collector daemon.
 
-# chkconfig: 2345 20 80
-# description: perfsonar collector startup script
+# Source function library.
+. /etc/rc.d/init.d/functions
 
-#--------------------------------------------------------------------
-#----- perfsonar_collector - Init Script
-#-----
-#----- Copyright(C) 2015 The Trustees of Indiana University
-#--------------------------------------------------------------------
-#----- $LastChangedBy: $
-#----- $LastChangedRevision: $
-#----- $LastChangedDate: $
-#----- $HeadURL: $
-#----- $Id: $
-#-----
-#----- This is a chkconfig-aware init script used to start, stop,
-#----- or restart the perfsonar_collector daemon.
-#--------------------------------------------------------------------
+name="perfsonar_collector"
+exec="/usr/bin/perfsonar_collector.pl"
+pidfile="/var/run/perfsonar_collector.pid"
+CONFIG="/etc/grnoc/perfsonar-collector/config.xml"
+LOGGING="/etc/grnoc/perfsonar-collector/logging.conf"
 
-use strict;
-use warnings;
-
-use constant PID_FILE => '/var/run/perfsonar-collector.pid';
-use constant CONFIG_FILE => '/etc/grnoc/perfsonar-collector/config.xml';
-
-use Data::Dumper;
-
-my $option = $ARGV[0];
-
-usage() if ( !defined( $option ) );
-
-# handle stop
-if ( $option eq "stop" ) {
-
-    stop();
+start() {
+    [ -f $CONFIG ] || exit 6
+    [ -x $exec ] || exit 5
+    echo -n $"Starting $name: "
+    daemon "$exec --config $CONFIG --logging $LOGGING"
+    retval=$?
+    echo
+    return $retval
 }
 
-# handle start
-elsif ( $option eq "start" ) {
-
-    start();
+stop() {
+    echo -n $"Stopping $name: "
+    if [ -f $pidfile ]
+    then
+        # shutdown haven't work, try old way
+        killproc -p $pidfile $name
+        retval=$?
+    else
+        success "$name shutdown"
+    fi
+    echo
+    return $retval
 }
 
-# handle restart
-elsif ( $option eq "restart" ) {
-
-    stop();
-    start();
+restart() {
+    stop
+    start
 }
 
-# handle reload
-elsif ( $option eq "reload" ) {
-
-    reload();
+reload()
+{
+    echo -n $"Reloading $name: "
+    if [ -f $pidfile ]
+    then
+        killproc -p $pidfile $name -HUP
+    else
+        failure $"Reloading $name"
+    fi
+    retval=$?
+    echo
+    return $retval
 }
 
-else {
-
-    usage();
+rh_status() {
+    status -p $pidfile $name
 }
 
-sub stop {
-
-    if ( ! -e PID_FILE ) {
-
-        print "PID file " . PID_FILE . " not found!\n";
-        return;
-    }
-
-    # determine pid from pid file
-    open( my $fh, PID_FILE );
-    my $pid = <$fh>;
-    close( $fh );
-
-    # send TERM to the process
-    `kill $pid` if ( defined( $pid ) );
-    unlink( PID_FILE );
+rh_status_q() {
+    rh_status >/dev/null 2>&1
 }
 
-sub start {
 
-    # make sure no perfsonar_collector processes exist
-    if ( -e PID_FILE ) {
-
-        print "PID file " . PID_FILE . " still exists!\n";
-        return;
-    }
-
-    my $cmd = '/usr/sbin/perfsonar_collector --config ' . CONFIG_FILE;
-
-    `$cmd`;
-}
-
-sub reload {
-
-    if ( ! -e PID_FILE ) {
-
-        print "PID file " . PID_FILE . " not found!\n";
-        return;
-    }
-
-    # determine pid from pid file
-    open( my $fh, PID_FILE );
-    my $pid = <$fh>;
-    close( $fh );
-
-    # send HUP to the process
-    `kill -1 $pid` if ( defined( $pid ) );
-}
-
-sub usage {
-
-    print "Usage: $0 [start|stop|restart|reload]\n";
-    exit( 1 );
-}
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    reload)
+	$1
+	;;
+    status)
+        rh_status
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|reload}"
+        exit 2
+esac
+exit $?

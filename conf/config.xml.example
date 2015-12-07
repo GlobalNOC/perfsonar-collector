@@ -1,9 +1,4 @@
 <config>
-  <!-- pid file -->
-  <pid-file location="/var/run/perfsonar-collector.pid" /> 
-  <!-- logging info -->
-  <logging config-file="/etc/grnoc/perfsonar_tsds_collector/logging.conf" />
-
   <!-- batch_size indicates how many datapoints to push to TSDS in each request -->
   <batch_size>100</batch_size>
 
