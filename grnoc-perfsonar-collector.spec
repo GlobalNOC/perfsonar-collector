@@ -1,6 +1,6 @@
 Summary: GRNOC perfSONAR Collector Tool
 Name: grnoc-perfsonar-collector
-Version: 1.0.0
+Version: 1.1.0
 Release: 1%{?dist}
 License: GRNOC
 Group: TSDS

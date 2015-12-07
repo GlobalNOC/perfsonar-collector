@@ -26,7 +26,7 @@ END
 WriteMakefile(
 	NAME                => 'grnoc-perfsonar-collector',
 	AUTHOR              => 'GRNOC Software Engineering',
-	VERSION             => '1.0.0',
+	VERSION_FROM             => 'lib/GRNOC/perfSONAR/Collector.pm',
 	PL_FILES            => {},
 	PREREQ_PM => {},
 	dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

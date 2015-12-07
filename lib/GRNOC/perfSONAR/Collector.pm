@@ -15,6 +15,9 @@ use Data::Dumper;
 use Try::Tiny;
 
 ### constants ### 
+
+our $VERSION = '1.1.0';
+
 use constant SLEEP_OFFSET => 30;
 
 ### required attributes ###
